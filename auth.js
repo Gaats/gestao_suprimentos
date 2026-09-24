@@ -2,27 +2,34 @@
   "use strict";
 
   const config = window.APP_CONFIG || {};
-  const onLoginPage = document.body?.dataset.page === "login" || location.pathname.endsWith("/login.html");
-  const loginUrl = "/login.html";
-  const appUrl = "/index.html";
+  const page = document.body.dataset.page;
+  const isLoginPage = page === "login";
+  const baseUrl = new URL("./", window.location.href);
+  const loginUrl = new URL("login.html", baseUrl).href;
+  const appUrl = new URL("index.html", baseUrl).href;
 
-  function configurationIsValid() {
+  function loginError(message) {
+    const element = document.getElementById("loginError");
+    if (element) element.textContent = message || "";
+  }
+
+  function configIsValid() {
     return Boolean(
-      config.SUPABASE_URL &&
-      config.SUPABASE_ANON_KEY &&
+      config.SUPABASE_URL && config.SUPABASE_ANON_KEY &&
       !config.SUPABASE_URL.includes("COLE_AQUI") &&
       !config.SUPABASE_ANON_KEY.includes("COLE_AQUI")
     );
   }
 
-  function setLoginError(message) {
-    const element = document.getElementById("loginError");
-    if (element) element.textContent = message || "";
+  if (!window.supabase) {
+    loginError("Não foi possível carregar a biblioteca de autenticação.");
+    if (!isLoginPage) window.location.replace(loginUrl + "?erro=biblioteca");
+    return;
   }
 
-  if (!configurationIsValid() || !window.supabase) {
-    if (onLoginPage) setLoginError("Configuração do Supabase ausente ou inválida.");
-    else location.replace(loginUrl + "?erro=configuracao");
+  if (!configIsValid()) {
+    loginError("Preencha SUPABASE_URL e SUPABASE_ANON_KEY no arquivo supabase-config.js.");
+    if (!isLoginPage) window.location.replace(loginUrl + "?erro=configuracao");
     return;
   }
 
@@ -31,55 +38,62 @@
   });
   window.supabaseClient = client;
 
-  async function requireSession() {
+  async function protectApp() {
     const { data, error } = await client.auth.getSession();
     if (error || !data.session) {
-      location.replace(loginUrl);
-      return null;
+      window.location.replace(loginUrl);
+      return;
     }
     window.currentSession = data.session;
     document.body.classList.remove("auth-pending");
     window.dispatchEvent(new CustomEvent("app-auth-ready", { detail: data.session }));
-    return data.session;
   }
 
-  async function initializeLogin() {
+  async function prepareLogin() {
     const { data } = await client.auth.getSession();
     if (data.session) {
-      location.replace(appUrl);
+      window.location.replace(appUrl);
       return;
     }
 
     const form = document.getElementById("loginForm");
     const button = document.getElementById("loginButton");
-    form.addEventListener("submit", async function (event) {
+    if (!form || !button) {
+      loginError("Formulário de login não encontrado.");
+      return;
+    }
+
+    form.addEventListener("submit", async (event) => {
       event.preventDefault();
-      setLoginError("");
+      loginError("");
       button.disabled = true;
       button.textContent = "Entrando...";
+
       const email = document.getElementById("loginEmail").value.trim();
       const password = document.getElementById("loginPassword").value;
-      const { data: signInData, error } = await client.auth.signInWithPassword({ email, password });
-      if (error || !signInData.session) {
-        setLoginError(error?.message === "Invalid login credentials" ? "E-mail ou senha inválidos." : (error?.message || "Não foi possível entrar."));
+      if (!email || !password) {
+        loginError("Informe o e-mail e a senha.");
         button.disabled = false;
         button.textContent = "Entrar";
         return;
       }
-      location.replace(appUrl);
+
+      const { data: signInData, error } = await client.auth.signInWithPassword({ email, password });
+      if (error || !signInData.session) {
+        loginError(error?.message === "Invalid login credentials" ? "E-mail ou senha inválidos." : (error?.message || "Não foi possível entrar."));
+        button.disabled = false;
+        button.textContent = "Entrar";
+        return;
+      }
+      window.location.replace(appUrl);
     });
   }
 
   window.signOutApp = async function () {
     await client.auth.signOut();
-    location.replace(loginUrl);
+    window.location.replace(loginUrl);
   };
 
-  if (onLoginPage) {
-    initializeLogin();
-  } else {
-    requireSession();
-    const logoutButton = document.getElementById("logoutBtn");
-    if (logoutButton) logoutButton.addEventListener("click", window.signOutApp);
-  }
+  if (isLoginPage) prepareLogin();
+  else protectApp();
 })();

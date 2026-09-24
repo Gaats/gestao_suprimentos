@@ -293,3 +293,15 @@ tbody tr:hover { background: #fffcfa; }
 }
 
 .auth-pending { visibility: hidden; }
+
+/* Autenticação */
+.auth-pending { visibility: hidden; }
+.login-screen { min-height: 100vh; display: grid; place-items: center; padding: 20px; background: var(--bg); }
+.login-card { width: min(420px, 100%); display: grid; gap: 14px; padding: 28px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+.login-brand { margin-bottom: 8px; }
+.login-card h2 { margin: 4px 0 0; color: var(--navy); }
+.login-card > p { margin: 0; color: var(--muted); font-size: 13px; }
+.login-card label { display: grid; gap: 7px; color: var(--navy); font-size: 12px; font-weight: 750; }
+.login-error { min-height: 18px; color: var(--red) !important; }
+.user-chip { max-width: 230px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: 11px; }
+@media (max-width: 760px) { .user-chip { display: none; } }

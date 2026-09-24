@@ -18,10 +18,12 @@
         </div>
       </div>
       <div class="header-actions">
+        <span class="user-chip" id="userChip"></span>
         <button class="button button-ghost" id="exportBtn" type="button" aria-label="Exportar movimentações em CSV">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14"/></svg>
           Exportar CSV
         </button>
+        <button class="button button-ghost" id="logoutBtn" type="button">Sair</button>
       </div>
     </header>
 
@@ -286,6 +288,9 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="auth.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
   <script src="auth.js"></script>
