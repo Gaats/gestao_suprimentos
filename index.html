@@ -7,18 +7,8 @@
   <title>Estoque da Planta</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-  <section class="login-screen" id="loginScreen">
-    <form class="login-card" id="loginForm">
-      <div class="brand login-brand"><div class="brand-mark">EP</div><div><p class="eyebrow">ACESSO SEGURO</p><h1>Estoque da Planta</h1></div></div>
-      <h2>Entrar</h2><p>Acesse com seu e-mail e senha cadastrados.</p>
-      <label>E-mail<input id="loginEmail" type="email" required autocomplete="username"></label>
-      <label>Senha<input id="loginPassword" type="password" required autocomplete="current-password"></label>
-      <p class="login-error" id="loginError" aria-live="polite"></p>
-      <button class="button button-primary" type="submit">Entrar</button>
-    </form>
-  </section>
-  <div class="app-shell" id="appShell" hidden>
+<body data-page="app" class="auth-pending">
+  <div class="app-shell">
     <header class="topbar">
       <div class="brand">
         <div class="brand-mark" aria-hidden="true">EP</div>
@@ -27,11 +17,11 @@
           <h1>Estoque da Planta</h1>
         </div>
       </div>
-      <div class="header-actions"><span class="user-chip" id="userChip"></span>
+      <div class="header-actions">
         <button class="button button-ghost" id="exportBtn" type="button" aria-label="Exportar movimentações em CSV">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14"/></svg>
           Exportar CSV
-        </button><button class="button button-ghost" id="logoutBtn" type="button">Sair</button>
+        </button>
       </div>
     </header>
 
@@ -298,6 +288,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
+  <script src="auth.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f47a20">
+  <title>Entrar | Estoque da Planta</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="login">
+  <main class="login-screen">
+    <form class="login-card" id="loginForm" novalidate>
+      <div class="brand login-brand">
+        <div class="brand-mark" aria-hidden="true">EP</div>
+        <div><p class="eyebrow">ACESSO SEGURO</p><h1>Estoque da Planta</h1></div>
+      </div>
+      <h2>Entrar</h2>
+      <p>Acesse com seu e-mail e senha cadastrados.</p>
+      <label>E-mail
+        <input id="loginEmail" type="email" required autocomplete="username" placeholder="seu.email@empresa.com">
+      </label>
+      <label>Senha
+        <input id="loginPassword" type="password" required autocomplete="current-password" placeholder="Sua senha">
+      </label>
+      <p class="login-error" id="loginError" role="alert" aria-live="polite"></p>
+      <button class="button button-primary" id="loginButton" type="submit">Entrar</button>
+    </form>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="auth.js"></script>
+</body>
+</html>

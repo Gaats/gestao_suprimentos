@@ -1,10 +1,5 @@
-(async function () {
+(function () {
   "use strict";
-  const cfg = window.APP_CONFIG || {};
-  const configured = cfg.SUPABASE_URL && !cfg.SUPABASE_URL.includes("COLE_AQUI") && cfg.SUPABASE_ANON_KEY && !cfg.SUPABASE_ANON_KEY.includes("COLE_AQUI");
-  const db = configured ? window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY) : null;
-  let currentUser = null;
-  let currentRole = "user";
 
   const STORAGE_KEY = "estoque-planta-v1";
   const LEGACY_STORAGE_KEY = "estoque-planta-demo-v1";
@@ -17,7 +12,7 @@
     return d.toISOString().slice(0, 10);
   };
 
-  let movements = [];
+  let movements = loadMovements();
   let pendingWriteoffId = null;
   let toastTimer = null;
 
@@ -264,7 +259,7 @@
     return valid;
   }
 
-  async function submitMovement(event) {
+  function submitMovement(event) {
     event.preventDefault();
     if (!validateForm()) {
       $(".invalid")?.focus();
@@ -327,7 +322,7 @@
     $("#confirmModal").hidden = true;
   }
 
-  async function confirmWriteoff() {
+  function confirmWriteoff() {
     const movement = movements.find((m) => m.id === pendingWriteoffId);
     if (movement) {
       movement.status = "Baixado";
@@ -361,50 +356,7 @@
     $("#exportBtn").addEventListener("click", exportCsv);
   }
 
-  async function loadSession() {
-    if (!db) { $("#loginError").textContent = "Configure supabase-config.js antes de usar."; return; }
-    const { data: { session } } = await db.auth.getSession();
-    if (session) await enterApp(session.user);
-  }
-  async function enterApp(user) {
-currentUser = user;
- 
-document.getElementById("loginScreen").style.display = "none";
- 
-document.getElementById("appShell").hidden = false;
- 
-document.getElementById("appShell").style.display = "block";
- 
-// administrador
-if (currentRole === "admin") {
-showView("dashboard");
-} else {
-showView("register");
-}
- 
-window.scrollTo(0, 0);
-}
-
-  $("#loginForm").addEventListener("submit", async (event) => {
-    event.preventDefault(); $("#loginError").textContent = "";
-    const { data, error } = await db.auth.signInWithPassword({ email: $("#loginEmail").value.trim(), password: $("#loginPassword").value });
-    if (error) { $("#loginError").textContent = "E-mail ou senha inválidos."; return; }
-    await enterApp(data.user);
-  });
-  $("#logoutBtn").addEventListener("click", async () => { await db.auth.signOut(); location.reload(); });
- window.addEventListener("DOMContentLoaded", async () => {
- 
-document.getElementById("appShell").hidden = true;
- 
-const {
-data: { session }
-} = await db.auth.getSession();
- 
-if (session) {
-await enterApp(session.user);
-} else {
-document.getElementById("loginScreen").style.display = "grid";
-}
- 
-});
-})();  
+  $("#date").value = isoOffset(0);
+  initEvents();
+  renderAll();
+})();
