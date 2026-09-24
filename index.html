@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f47a20">
+  <title>Estoque da Planta</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <section class="login-screen" id="loginScreen">
+    <form class="login-card" id="loginForm">
+      <div class="brand login-brand"><div class="brand-mark">EP</div><div><p class="eyebrow">ACESSO SEGURO</p><h1>Estoque da Planta</h1></div></div>
+      <h2>Entrar</h2><p>Acesse com seu e-mail e senha cadastrados.</p>
+      <label>E-mail<input id="loginEmail" type="email" required autocomplete="username"></label>
+      <label>Senha<input id="loginPassword" type="password" required autocomplete="current-password"></label>
+      <p class="login-error" id="loginError" aria-live="polite"></p>
+      <button class="button button-primary" type="submit">Entrar</button>
+    </form>
+  </section>
+  <div class="app-shell" id="appShell" hidden>
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">EP</div>
+        <div>
+          <p class="eyebrow">CONTROLE OPERACIONAL</p>
+          <h1>Estoque da Planta</h1>
+        </div>
+      </div>
+      <div class="header-actions"><span class="user-chip" id="userChip"></span>
+        <button class="button button-ghost" id="exportBtn" type="button" aria-label="Exportar movimentações em CSV">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14"/></svg>
+          Exportar CSV
+        </button><button class="button button-ghost" id="logoutBtn" type="button">Sair</button>
+      </div>
+    </header>
+
+    <nav class="tabbar" aria-label="Navegação principal">
+      <button class="tab active" data-view="dashboard" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h6V4H4v9Zm10 7h6v-9h-6v9ZM4 20h6v-3H4v3Zm10-13h6V4h-6v3Z"/></svg>
+        Visão geral
+      </button>
+      <button class="tab" data-view="register" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Nova movimentação
+      </button>
+      <button class="tab" data-view="history" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8m0-5v5h5M12 7v5l3 2"/></svg>
+        Consultar
+        <span class="nav-count" id="pendingNavCount">0</span>
+      </button>
+    </nav>
+
+    <main>
+      <section class="view active" id="dashboard" aria-labelledby="dashboardTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">ATUALIZADO EM <span id="lastUpdated">—</span></p>
+            <h2 id="dashboardTitle">Resumo do estoque</h2>
+            <p>Acompanhe saldos, pendências e pontos de atenção em uma única visão.</p>
+          </div>
+          <button class="button button-primary quick-register" type="button" data-go="register">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            Registrar movimentação
+          </button>
+        </div>
+
+        <div class="kpi-grid" id="kpiGrid"></div>
+
+        <div class="dashboard-grid">
+          <article class="panel chart-panel span-2">
+            <div class="panel-heading">
+              <div>
+                <h3>Movimentações nos últimos 7 dias</h3>
+                <p>Comparativo entre entradas e saídas</p>
+              </div>
+              <div class="legend"><span class="dot dot-orange"></span> Entradas <span class="dot dot-navy"></span> Saídas</div>
+            </div>
+            <div class="chart" id="movementChart" role="img" aria-label="Gráfico de entradas e saídas nos últimos sete dias"></div>
+          </article>
+
+          <article class="panel attention-panel">
+            <div class="panel-heading">
+              <div>
+                <h3>Itens para reposição</h3>
+                <p>Saldo igual ou abaixo do mínimo</p>
+              </div>
+              <span class="count-pill" id="restockCount">0</span>
+            </div>
+            <div class="attention-list" id="restockList"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <h3>Distribuição das movimentações</h3>
+                <p>Volume por tipo</p>
+              </div>
+            </div>
+            <div class="donut-wrap">
+              <div class="donut" id="typeDonut"><div><strong id="donutTotal">0</strong><span>unidades</span></div></div>
+              <div class="donut-legend" id="donutLegend"></div>
+            </div>
+          </article>
+
+          <article class="panel span-2">
+            <div class="panel-heading">
+              <div>
+                <h3>Trocas por colaborador</h3>
+                <p>Quantidade de itens substituídos no período</p>
+              </div>
+            </div>
+            <div class="bar-list" id="employeeChart"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="view" id="register" aria-labelledby="registerTitle">
+        <div class="section-heading compact">
+          <div>
+            <p class="eyebrow">LANÇAMENTO RÁPIDO</p>
+            <h2 id="registerTitle">Registrar movimentação</h2>
+            <p>O saldo e os indicadores serão atualizados automaticamente.</p>
+          </div>
+        </div>
+
+        <div class="form-layout">
+          <form class="panel movement-form" id="movementForm" novalidate>
+            <div class="form-section-title">
+              <span>1</span>
+              <div><h3>Dados do item</h3><p>Identifique o material movimentado.</p></div>
+            </div>
+            <div class="form-grid">
+              <label>Código do item
+                <input id="code" name="code" required maxlength="20" placeholder="Ex.: EPI-001" autocomplete="off">
+                <span class="field-error"></span>
+              </label>
+              <label class="field-wide">Nome do item
+                <input id="item" name="item" required maxlength="70" placeholder="Ex.: Luva de proteção" autocomplete="off">
+                <span class="field-error"></span>
+              </label>
+              <label>Unidade
+                <select id="unit" name="unit" required>
+                  <option value="un">Unidade (un)</option>
+                  <option value="par">Par</option>
+                  <option value="cx">Caixa</option>
+                  <option value="pct">Pacote</option>
+                  <option value="lt">Litro</option>
+                  <option value="kg">Quilograma</option>
+                </select>
+              </label>
+              <label>Quantidade
+                <input id="quantity" name="quantity" type="number" min="1" step="1" required placeholder="0">
+                <span class="field-error"></span>
+              </label>
+              <label>Estoque mínimo
+                <input id="minimum" name="minimum" type="number" min="0" step="1" value="10" required>
+                <span class="field-error"></span>
+              </label>
+            </div>
+
+            <div class="form-section-title">
+              <span>2</span>
+              <div><h3>Detalhes da movimentação</h3><p>Informe a finalidade e a situação da baixa.</p></div>
+            </div>
+            <div class="form-grid">
+              <label>Tipo de movimentação
+                <select id="type" name="type" required>
+                  <option value="Entrada">Entrada</option>
+                  <option value="Entrega">Entrega</option>
+                  <option value="Troca">Troca / substituição</option>
+                </select>
+              </label>
+              <label>Status da baixa
+                <select id="status" name="status" required>
+                  <option value="Pendente">Pendente de baixa</option>
+                  <option value="Baixado">Baixado no sistema</option>
+                </select>
+              </label>
+              <label class="field-wide">Colaborador
+                <input id="employee" name="employee" required maxlength="60" placeholder="Nome de quem recebeu ou registrou" autocomplete="off">
+                <span class="field-error"></span>
+              </label>
+              <label>Data
+                <input id="date" name="date" type="date" required>
+                <span class="field-error"></span>
+              </label>
+              <label class="field-full">Observação <span class="optional">opcional</span>
+                <textarea id="notes" name="notes" maxlength="160" rows="3" placeholder="Ex.: troca por desgaste natural"></textarea>
+              </label>
+            </div>
+
+            <div class="form-actions">
+              <button class="button button-ghost" type="reset">Limpar</button>
+              <button class="button button-primary" type="submit">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4L19 6"/></svg>
+                Salvar movimentação
+              </button>
+            </div>
+          </form>
+
+          <aside class="side-stack">
+            <div class="panel stock-preview">
+              <span class="preview-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 7 8-4 8 4-8 4-8-4Zm0 0v10l8 4 8-4V7M12 11v10"/></svg>
+              </span>
+              <p>Saldo atual do item</p>
+              <strong id="currentItemStock">—</strong>
+              <small id="stockPreviewText">Digite um código para consultar.</small>
+            </div>
+            <div class="info-card">
+              <strong>Como funciona</strong>
+              <p>Entradas aumentam o saldo. Entregas e trocas reduzem o saldo e podem ficar pendentes até a matriz concluir a baixa.</p>
+            </div>
+            <div class="info-card warning">
+              <strong>Validação de segurança</strong>
+              <p>O painel bloqueia saídas maiores que o saldo disponível.</p>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="view" id="history" aria-labelledby="historyTitle">
+        <div class="section-heading compact">
+          <div>
+            <p class="eyebrow">RASTREABILIDADE</p>
+            <h2 id="historyTitle">Consultar movimentações</h2>
+            <p>Filtre registros, confira responsáveis e conclua as baixas da matriz.</p>
+          </div>
+        </div>
+
+        <div class="panel filters">
+          <label class="search-field">Buscar
+            <span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="searchFilter" placeholder="Código, item ou colaborador"></span>
+          </label>
+          <label>Tipo
+            <select id="typeFilter">
+              <option value="">Todos</option>
+              <option value="Entrada">Entrada</option>
+              <option value="Entrega">Entrega</option>
+              <option value="Troca">Troca</option>
+            </select>
+          </label>
+          <label>Status
+            <select id="statusFilter">
+              <option value="">Todos</option>
+              <option value="Pendente">Pendente</option>
+              <option value="Baixado">Baixado</option>
+            </select>
+          </label>
+          <label>De
+            <input id="fromFilter" type="date">
+          </label>
+          <label>Até
+            <input id="toFilter" type="date">
+          </label>
+          <button class="button button-ghost clear-filter" id="clearFilters" type="button">Limpar filtros</button>
+        </div>
+
+        <div class="panel table-panel">
+          <div class="table-summary">
+            <p><strong id="resultCount">0</strong> movimentações encontradas</p>
+            <p class="table-help"><span class="status-dot"></span> Clique em “Concluir baixa” para atualizar uma pendência.</p>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Data</th><th>Código / Item</th><th>Tipo</th><th>Quantidade</th><th>Colaborador</th><th>Status</th><th>Ação</th></tr></thead>
+              <tbody id="movementTable"></tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="emptyState" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m-11 0 1 15h12l1-15M9 10v7m6-7v7"/></svg>
+            <h3>Nenhuma movimentação encontrada</h3>
+            <p>Ajuste os filtros ou registre uma nova movimentação.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <span class="toast-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4L19 6"/></svg></span>
+    <div><strong id="toastTitle">Pronto</strong><p id="toastText"></p></div>
+    <button type="button" id="toastClose" aria-label="Fechar aviso">×</button>
+  </div>
+
+  <div class="modal-backdrop" id="confirmModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <span class="modal-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4L19 6"/></svg></span>
+      <h3 id="modalTitle">Concluir baixa?</h3>
+      <p>O registro será marcado como baixado no sistema da matriz.</p>
+      <div class="modal-actions">
+        <button class="button button-ghost" id="cancelModal" type="button">Cancelar</button>
+        <button class="button button-primary" id="confirmWriteoff" type="button">Sim, concluir</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

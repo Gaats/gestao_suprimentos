@@ -1,0 +1,30 @@
+PAINEL DE CONTROLE DE ESTOQUE DA PLANTA - VERCEL + SUPABASE
+
+1. SUPABASE
+- Crie um projeto.
+- Em SQL Editor, execute todo o arquivo supabase.sql.
+- Em Authentication > Users, crie os usuarios por e-mail e senha.
+- O trigger cria automaticamente o perfil com nivel user.
+- Para o primeiro administrador, execute no SQL Editor:
+  update public.profiles set role = 'admin' where id = 'UUID_DO_USUARIO';
+- Em Project Settings > API, copie Project URL e a chave publicavel/anon.
+- Cole os dois valores em supabase-config.js. A chave publicavel/anon pode ficar no navegador; nunca use service_role no frontend.
+
+2. PERMISSOES
+- Administrador: visao geral, nova movimentacao, consulta, exportacao e conclusao de baixa.
+- Usuario comum: somente a tela Nova movimentacao e insercao de entradas/saidas.
+- As permissoes reais ficam protegidas pelas politicas RLS do Supabase, nao apenas pela interface.
+
+3. VERCEL
+- Envie todos os arquivos desta pasta para um repositorio GitHub.
+- Importe o repositorio na Vercel como projeto.
+- Framework Preset: Other. Nao ha comando de build.
+- Faça o deploy. O vercel.json trata rotas e cabecalhos basicos de seguranca.
+
+4. TESTE
+- Abra a URL publicada e entre como usuario comum: somente Nova movimentacao deve aparecer.
+- Registre uma entrada e uma saida valida.
+- Entre como administrador: dashboard, consulta, CSV e concluir baixa devem aparecer.
+- Confirme no Supabase Table Editor que public.movements recebeu os registros.
+
+Arquivos principais: index.html, styles.css, app.js, supabase-config.js, supabase.sql e vercel.json.
