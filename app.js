@@ -367,22 +367,24 @@
     if (session) await enterApp(session.user);
   }
   async function enterApp(user) {
-    currentUser = user;
-    const { data: profile, error: profileError } = await db.from("profiles").select("full_name,role").eq("id", user.id).single();
-    if (profileError) { $("#loginError").textContent = profileError.message; return; }
-    currentRole = profile.role;
-    const { data, error } = await db.from("movements").select("*").order("date", { ascending:false });
-    if (error) { $("#loginError").textContent = error.message; return; }
-    movements = data || [];
-    $("#loginScreen").hidden = true; $("#appShell").hidden = false;
-    $("#userChip").textContent = `${profile.full_name || user.email} · ${currentRole === "admin" ? "Administrador" : "Usuário"}`;
-    if (currentRole !== "admin") {
-      $$(".tab").forEach(t => t.hidden = t.dataset.view !== "register");
-      $("#exportBtn").hidden = true;
-      showView("register");
-    } else showView("dashboard");
-    $("#date").value = isoOffset(0); initEvents(); renderAll();
-  }
+currentUser = user;
+ 
+document.getElementById("loginScreen").style.display = "none";
+ 
+document.getElementById("appShell").hidden = false;
+ 
+document.getElementById("appShell").style.display = "block";
+ 
+// administrador
+if (currentRole === "admin") {
+showView("dashboard");
+} else {
+showView("register");
+}
+ 
+window.scrollTo(0, 0);
+}
+
   $("#loginForm").addEventListener("submit", async (event) => {
     event.preventDefault(); $("#loginError").textContent = "";
     const { data, error } = await db.auth.signInWithPassword({ email: $("#loginEmail").value.trim(), password: $("#loginPassword").value });
@@ -390,5 +392,19 @@
     await enterApp(data.user);
   });
   $("#logoutBtn").addEventListener("click", async () => { await db.auth.signOut(); location.reload(); });
-  await loadSession();
+ window.addEventListener("DOMContentLoaded", async () => {
+ 
+document.getElementById("appShell").hidden = true;
+ 
+const {
+data: { session }
+} = await db.auth.getSession();
+ 
+if (session) {
+await enterApp(session.user);
+} else {
+document.getElementById("loginScreen").style.display = "grid";
+}
+ 
+});
 })();  
